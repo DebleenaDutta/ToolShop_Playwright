@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": [
+    "playwright.config.ts",
+    "pages/**/*.ts",
+    "tests/**/*.ts",
+    "test-data/**/*.ts"
+  ]
+}
