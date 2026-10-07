@@ -14,9 +14,11 @@ test('validate successful login and logout', async ({ page }) => {
   });
   await authenticationPage.signIn(checkoutCredentials.email, checkoutCredentials.password);
   expect((await loginResponse).status()).toBe(200);
+  await page.waitForLoadState('networkidle');
   await expect(page.locator(AccountPageSelectors.Title)).toContainText('My account');
   await expect(page.locator(NavigationSelectors.Menu)).toContainText(checkoutCredentials.username);
   await authenticationPage.signOut();
+  await page.waitForLoadState('networkidle');
   await expect(page.locator(NavigationSelectors.SignInLink)).toContainText('Sign in');
 });
 
