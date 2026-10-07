@@ -9,7 +9,7 @@ export enum SignInPageSelectors {
   Email = '[data-test="email"]',
   Password = '[data-test="password"]',
   Submit = '[data-test="login-submit"]',
-  ErrorLogin='[data-test="login-error"]',
+  ErrorLogin = '[data-test="login-error"]',
 }
 
 export enum RegisterPageSelectors {

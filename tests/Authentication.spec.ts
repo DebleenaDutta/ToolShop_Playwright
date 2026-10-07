@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { AuthenticationPage } from '../pages/AuthenticationPage';
-import { SignInPageSelectors, AccountPageSelectors, NavigationSelectors } from '../pages/ToolShopSelector';
+import {
+  AccountPageSelectors,
+  NavigationSelectors,
+  SignInPageSelectors,
+} from '../pages/ToolShopSelector';
 import { apiBaseURL, checkoutCredentials } from '../playwright.config';
 import { testData } from '../test-data/testData';
 
@@ -13,13 +17,14 @@ test('validate successful login and logout', async ({ page }) => {
     return url.origin === apiBaseURL && url.pathname === '/users/login' && response.request().method() === 'POST';
   });
   await authenticationPage.signIn(checkoutCredentials.email, checkoutCredentials.password);
-  expect((await loginResponse).status()).toBe(200);  
+  expect((await loginResponse).status()).toBe(200);
   await expect(page.locator(AccountPageSelectors.Title)).toContainText('My account');
   await expect(page.locator(NavigationSelectors.Menu)).toContainText(checkoutCredentials.username);
-  await authenticationPage.signOut();  
+  await authenticationPage.signOut();
   await expect(page.locator(NavigationSelectors.SignInLink)).toContainText('Sign in');
 });
 
+// Verifies a customer cannot sign in with invalid credentials.
 test('validate unsuccessful login with invalid credentials', async ({ page }) => {
   const authenticationPage = new AuthenticationPage(page);
   await authenticationPage.open();

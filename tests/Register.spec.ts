@@ -18,11 +18,19 @@ test('submits registration details to the register API', async ({ page }) => {
 
   const registrationRequestPromise = page.waitForRequest((request) => {
     const url = new URL(request.url());
-    return url.origin === apiBaseURL && url.pathname === '/users/register' && request.method() === 'POST';
+    return (
+      url.origin === apiBaseURL &&
+      url.pathname === '/users/register' &&
+      request.method() === 'POST'
+    );
   });
   const registrationResponsePromise = page.waitForResponse((response) => {
     const url = new URL(response.url());
-    return url.origin === apiBaseURL && url.pathname === '/users/register' && response.request().method() === 'POST';
+    return (
+      url.origin === apiBaseURL &&
+      url.pathname === '/users/register' &&
+      response.request().method() === 'POST'
+    );
   });
   const postcodeLookupRequestPromise = page.waitForRequest((request) => {
     const url = new URL(request.url());
@@ -78,10 +86,14 @@ test('shows required-field errors when submitting an empty registration form', a
 
   await expect(page.locator(RegisterPageSelectors.FirstNameError)).toContainText('First name is required');
   await expect(page.locator(RegisterPageSelectors.LastNameError)).toContainText('Last name is required');
-  await expect(page.locator(RegisterPageSelectors.DateOfBirthError)).toContainText('Date of Birth is required');
+  await expect(page.locator(RegisterPageSelectors.DateOfBirthError)).toContainText(
+    'Date of Birth is required',
+  );
   await expect(page.locator(RegisterPageSelectors.CountryError)).toContainText('Country is required');
   await expect(page.locator(RegisterPageSelectors.PostalCodeError)).toContainText('Postcode is required');
-  await expect(page.locator(RegisterPageSelectors.HouseNumberError)).toContainText('House number is required');
+  await expect(page.locator(RegisterPageSelectors.HouseNumberError)).toContainText(
+    'House number is required',
+  );
   await expect(page.locator(RegisterPageSelectors.StreetError)).toContainText('Street is required');
   await expect(page.locator(RegisterPageSelectors.CityError)).toContainText('City is required');
   await expect(page.locator(RegisterPageSelectors.StateError)).toContainText('State is required');
