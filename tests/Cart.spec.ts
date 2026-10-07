@@ -6,23 +6,23 @@ import { testData } from '../test-data/testData';
 
 async function findProductIds(
   request: APIRequestContext,
-  names: string[],
+  productNames: string[],
 ): Promise<Record<string, string>> {
-  const response = await request.get(
-    `${apiBaseURL}/products/search?q=${encodeURIComponent(names[0])}`,
+  const searchResponse = await request.get(
+    `${apiBaseURL}/products/search?q=${encodeURIComponent(productNames[0])}`,
   );
-  expect(response.status()).toBe(200);
+  expect(searchResponse.status()).toBe(200);
 
-  const { data } = (await response.json()) as {
+  const { data: searchResults } = (await searchResponse.json()) as {
     data: Array<{ id: string; name: string }>;
   };
   return Object.fromEntries(
-    names.map((name) => {
-      const product = data.find((item) => item.name === name);
+    productNames.map((productName) => {
+      const product = searchResults.find((item) => item.name === productName);
       if (!product) {
-        throw new Error(`Product "${name}" was not found in the catalog`);
+        throw new Error(`Product "${productName}" was not found in the catalog`);
       }
-      return [name, product.id];
+      return [productName, product.id];
     }),
   );
 }
@@ -34,7 +34,7 @@ test('adds a searched product to the cart', async ({ page, request }) => {
     testData.cart.productName,
   ]);
 
-  await page.goto('/');  
+  await page.goto('/');
   const cartItemRequestPromise = page.waitForRequest((request) => {
     const url = new URL(request.url());
     return (
@@ -80,10 +80,10 @@ test('removes a product from the cart and validates the remaining item', async (
   const { id: cartId } = (await createCartResponse.json()) as { id: string };
   expect(cartId).toBeTruthy();
 
-  const products = [productId, retainedProductId];
-  for (const id of products) {
+  const productIds = [productId, retainedProductId];
+  for (const currentProductId of productIds) {
     const addItemResponse = await request.post(`${apiBaseURL}/carts/${cartId}`, {
-      data: { product_id: id, quantity: 1 },
+      data: { product_id: currentProductId, quantity: 1 },
     });
     expect(addItemResponse.status()).toBe(200);
   }
@@ -93,10 +93,14 @@ test('removes a product from the cart and validates the remaining item', async (
   const cartBeforeDelete = (await cartBeforeDeleteResponse.json()) as {
     cart_items: Array<{ product_id: string; quantity: number }>;
   };
-  expect(cartBeforeDelete.cart_items).toHaveLength(products.length);
+  expect(cartBeforeDelete.cart_items).toHaveLength(productIds.length);
   expect(
     cartBeforeDelete.cart_items.map(({ product_id, quantity }) => ({ product_id, quantity })),
-  ).toEqual(expect.arrayContaining(products.map((product_id) => ({ product_id, quantity: 1 }))));
+  ).toEqual(
+    expect.arrayContaining(
+      productIds.map((product_id) => ({ product_id, quantity: 1 })),
+    ),
+  );
 
   const deleteResponse = await request.delete(
     `${apiBaseURL}/carts/${cartId}/product/${productId}`,
