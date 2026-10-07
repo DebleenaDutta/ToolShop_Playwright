@@ -9,8 +9,68 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      TOOLSHOP_BASE_URL: http://localhost:4200
+      TOOLSHOP_API_BASE_URL: http://localhost:8091
+      SPRINT: sprint5
+      DISABLE_LOGGING: "true"
     steps:
     - uses: actions/checkout@v4
+    - name: Checkout Toolshop application
+      uses: actions/checkout@v4
+      with:
+        repository: testsmith-io/practice-software-testing
+        ref: c752a7029176fd878dc8de00651722cac80e5216
+        path: toolshop
+    - name: Start local Toolshop services
+      working-directory: toolshop
+      run: |
+        printf 'SPRINT=%s\nDISABLE_LOGGING=%s\n' "$SPRINT" "$DISABLE_LOGGING" > .env
+        docker compose -f docker-compose.yml up -d --build
+    - name: Install Toolshop API dependencies
+      working-directory: toolshop
+      run: docker compose exec -T -u root laravel-api composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-ffi
+    - name: Wait for database and seed Toolshop
+      working-directory: toolshop
+      run: |
+        echo "Waiting for MariaDB..."
+        for attempt in $(seq 1 60); do
+          if docker compose exec -T mariadb mysqladmin ping -h localhost -u root -proot --silent 2>/dev/null; then
+            echo "MariaDB is ready."
+            break
+          fi
+          if [ "$attempt" -eq 60 ]; then
+            docker compose logs --no-color mariadb
+            exit 1
+          fi
+          sleep 2
+        done
+        docker compose exec -T laravel-api php artisan migrate:fresh --seed
+    - name: Wait for local Toolshop UI and API
+      working-directory: toolshop
+      run: |
+        for service in ui api; do
+          if [ "$service" = ui ]; then
+            url=http://localhost:4200
+            container=angular-ui
+          else
+            url=http://localhost:8091/status
+            container=web
+          fi
+
+          echo "Waiting for Toolshop $service at $url..."
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent "$url" --output /dev/null 2>/dev/null; then
+              echo "Toolshop $service is ready."
+              break
+            fi
+            if [ "$attempt" -eq 60 ]; then
+              docker compose logs --no-color "$container"
+              exit 1
+            fi
+            sleep 5
+          done
+        done
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
@@ -26,3 +86,9 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+    - name: Stop local Toolshop services
+      if: always()
+      run: |
+        if [ -f toolshop/docker-compose.yml ]; then
+          docker compose -f toolshop/docker-compose.yml down --volumes
+        fi

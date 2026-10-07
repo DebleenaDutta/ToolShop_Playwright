@@ -6,7 +6,8 @@ export const checkoutCredentials = {
   username: 'Jack Howe',
 };
 
-export const apiBaseURL = 'https://api.practicesoftwaretesting.com';
+export const apiBaseURL =
+  process.env.TOOLSHOP_API_BASE_URL ?? 'https://api.practicesoftwaretesting.com';
 
 export default defineConfig({
   testDir: './tests',
@@ -16,7 +17,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'https://practicesoftwaretesting.com',
+    baseURL: process.env.TOOLSHOP_BASE_URL ?? 'https://practicesoftwaretesting.com',
     trace: 'on-first-retry',
   },
   projects: [

@@ -39,6 +39,19 @@ npx playwright show-report
 
 The storefront base URL, API base URL, browser projects, and demo login account are configured in `playwright.config.ts`.
 
+## GitHub Actions
+
+The Playwright workflow checks out the Toolshop application from
+[`testsmith-io/practice-software-testing`](https://github.com/testsmith-io/practice-software-testing),
+starts its Docker Compose services, and seeds the Sprint 5 database before
+running tests against the local UI (`http://localhost:4200`) and API
+(`http://localhost:8091`). The application revision is pinned in the workflow
+so CI runs against a stable version.
+
+For local runs, the hosted storefront and API remain the defaults. Override
+them with `TOOLSHOP_BASE_URL` and `TOOLSHOP_API_BASE_URL` when running against
+a local Toolshop instance.
+
 ## Test cases
 
 ### Authentication — `tests/Authentication.spec.ts`
@@ -60,4 +73,3 @@ The storefront base URL, API base URL, browser projects, and demo login account 
 
 - Shared test data is in `test-data/testData.ts`.
 - Page objects and grouped locator enums are in `pages/`.
-
