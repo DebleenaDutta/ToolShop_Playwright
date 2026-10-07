@@ -13,12 +13,10 @@ test('validate successful login and logout', async ({ page }) => {
     return url.origin === apiBaseURL && url.pathname === '/users/login' && response.request().method() === 'POST';
   });
   await authenticationPage.signIn(checkoutCredentials.email, checkoutCredentials.password);
-  expect((await loginResponse).status()).toBe(200);
-  await page.waitForLoadState('networkidle');
+  expect((await loginResponse).status()).toBe(200);  
   await expect(page.locator(AccountPageSelectors.Title)).toContainText('My account');
   await expect(page.locator(NavigationSelectors.Menu)).toContainText(checkoutCredentials.username);
-  await authenticationPage.signOut();
-  await page.waitForLoadState('networkidle');
+  await authenticationPage.signOut();  
   await expect(page.locator(NavigationSelectors.SignInLink)).toContainText('Sign in');
 });
 
