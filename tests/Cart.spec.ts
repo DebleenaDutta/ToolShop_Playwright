@@ -35,7 +35,7 @@ test('adds a searched product to the cart', async ({ page, request }) => {
   ]);
 
   await page.goto('/');
-
+  await page.waitForLoadState('networkidle');
   const cartItemRequestPromise = page.waitForRequest((request) => {
     const url = new URL(request.url());
     return (
